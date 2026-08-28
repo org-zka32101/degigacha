@@ -1,0 +1,30 @@
+{
+  "language": "japanese",
+  "permissions": {
+    "allow": [
+      "Bash(flutter *)",
+      "Bash(dart *)",
+      "Bash(git *)",
+      "Bash(pub *)",
+      "Read",
+      "Edit",
+      "Write",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // .tool_response.filePath' | { read -f; if [[ \"$f\" =~ \\.(dart|yaml)$ ]]; then dart format \"$f\" 2>/dev/null || true; fi; } 2>/dev/null || true",
+            "statusMessage": "Formatting code..."
+          }
+        ]
+      }
+    ]
+  }
+}
