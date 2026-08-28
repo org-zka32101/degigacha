@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/repositories/gacha_repository.dart';
 import '../../data/repositories/user_repository.dart';
+import '../../domain/usecases/auth_usecase.dart';
+import '../../domain/usecases/gacha_usecase.dart';
 import '../../services/ai_service.dart';
 import '../../services/auth_service.dart';
 import 'auth_notifier.dart';
@@ -27,6 +29,28 @@ final gachaRepositoryProvider = Provider<GachaRepository>((ref) {
 /// UserRepository を提供するプロバイダー
 final userRepositoryProvider = Provider<UserRepository>((ref) {
   return UserRepository();
+});
+
+// ========== Use Case Providers ==========
+
+/// AuthUsecase を提供するプロバイダー
+final authUsecaseProvider = Provider<AuthUsecase>((ref) {
+  final authService = ref.watch(authServiceProvider);
+  final userRepository = ref.watch(userRepositoryProvider);
+  return AuthUsecase(
+    authService: authService,
+    userRepository: userRepository,
+  );
+});
+
+/// GachaUsecase を提供するプロバイダー
+final gachaUsecaseProvider = Provider<GachaUsecase>((ref) {
+  final gachaRepository = ref.watch(gachaRepositoryProvider);
+  final aiService = ref.watch(aiServiceProvider);
+  return GachaUsecase(
+    gachaRepository: gachaRepository,
+    aiService: aiService,
+  );
 });
 
 // ========== State Management Providers ==========

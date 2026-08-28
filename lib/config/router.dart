@@ -4,15 +4,24 @@ import '../presentation/screens/home_screen.dart';
 import '../presentation/screens/capture_screen.dart';
 import '../presentation/screens/login_screen.dart';
 
+import '../presentation/riverpod/auth_notifier.dart';
+
 final appRouterProvider = Provider<GoRouter>((ref) {
+  final authState = ref.watch(authNotifierProvider);
+
   return GoRouter(
-    initialLocation: '/',
+    initialLocation: authState.isAuthenticated ? '/' : '/login',
     redirect: (context, state) {
-      // TODO: Implement auth state check
-      // final isLoggedIn = ref.read(authNotifierProvider).uid != null;
-      // if (!isLoggedIn && state.location != '/login') {
-      //   return '/login';
-      // }
+      // ユーザーがログインしていない場合
+      if (!authState.isAuthenticated && state.location != '/login') {
+        return '/login';
+      }
+
+      // ユーザーがログイン済みでログイン画面にアクセスしている場合
+      if (authState.isAuthenticated && state.location == '/login') {
+        return '/';
+      }
+
       return null;
     },
     routes: [
