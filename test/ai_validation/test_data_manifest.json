@@ -1,0 +1,116 @@
+{
+  "metadata": {
+    "description": "Test data manifest for Phase 3 AI validation",
+    "version": "1.0",
+    "totalTestCases": 0,
+    "testDate": "2024-XX-XX to 2024-XX-XX",
+    "targetAccuracy": 85,
+    "targetConfidence": 0.85
+  },
+  "testCases": [
+    {
+      "id": "001",
+      "imagePath": "test/ai_validation/test_images/sample_001.jpg",
+      "expectedName": "Character/Item Name",
+      "expectedSeries": "Series Name",
+      "expectedRarity": "SSR",
+      "minConfidence": 0.80,
+      "imageCondition": "normal",
+      "notes": "High quality image, clear item"
+    },
+    {
+      "id": "002",
+      "imagePath": "test/ai_validation/test_images/sample_002.jpg",
+      "expectedName": "Character/Item Name",
+      "expectedSeries": "Series Name",
+      "expectedRarity": "SR",
+      "minConfidence": 0.75,
+      "imageCondition": "blurry",
+      "notes": "Slightly blurry, common edge case"
+    },
+    {
+      "id": "003",
+      "imagePath": "test/ai_validation/test_images/sample_003.jpg",
+      "expectedName": "Character/Item Name",
+      "expectedSeries": "Series Name",
+      "expectedRarity": "R",
+      "minConfidence": 0.70,
+      "imageCondition": "damaged",
+      "notes": "Item with visible wear/damage"
+    }
+  ],
+  "instructions": {
+    "preparation": [
+      "1. Collect 100+ gacha items from various series",
+      "2. Take clear photos with good lighting",
+      "3. Include diverse rarity levels (N, R, SR, SSR)",
+      "4. Add intentional edge cases (blurry, damaged, poor lighting)",
+      "5. Document ground truth for each image",
+      "6. Organize into test_images/ directory",
+      "7. Create entries in this manifest"
+    ],
+    "validation": [
+      "1. Run: flutter test test/ai_validation/ai_validator_test.dart",
+      "2. Review results in test_results/report.json",
+      "3. Analyze per-series accuracy",
+      "4. Identify error patterns",
+      "5. If accuracy < 85%, refine prompt and retry",
+      "6. Document findings in RESULTS.md"
+    ],
+    "seriesExample": [
+      "Make sure to include diverse series such as:",
+      "- Popular anime/game franchises",
+      "- Niche/specialty collections",
+      "- Recent releases",
+      "- Older series (2+ years old)",
+      "- Various art styles and designs"
+    ]
+  },
+  "expectedOutput": {
+    "resultExample": {
+      "id": "001",
+      "imagePath": "test_images/sample_001.jpg",
+      "predicted": {
+        "name": "Character Name",
+        "series": "Series Name",
+        "rarity": "SSR",
+        "confidence": 0.92
+      },
+      "expected": {
+        "name": "Character Name",
+        "series": "Series Name",
+        "rarity": "SSR"
+      },
+      "correct": true,
+      "confidence_acceptable": true,
+      "notes": "Perfect match with high confidence"
+    }
+  },
+  "phase3_criteria": {
+    "overall_accuracy": {
+      "metric": "Correct Predictions / Total Predictions",
+      "target": ">= 85%",
+      "description": "Overall accuracy across all test cases"
+    },
+    "average_confidence": {
+      "metric": "Mean confidence score",
+      "target": ">= 0.85",
+      "description": "Average AI confidence on predictions"
+    },
+    "false_positive_rate": {
+      "metric": "Non-gacha items identified as gacha items",
+      "target": "< 5%",
+      "description": "False positive rate on edge cases"
+    },
+    "series_accuracy": {
+      "metric": "Per-series accuracy",
+      "target": ">= 90%",
+      "description": "Correct series identification"
+    },
+    "rarity_accuracy": {
+      "metric": "Correct rarity classification",
+      "target": ">= 80%",
+      "description": "N/R/SR/SSR classification accuracy"
+    }
+  }
+}
