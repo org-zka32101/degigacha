@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../data/repositories/gacha_repository.dart';
+import '../../data/repositories/user_repository.dart';
 import '../../services/ai_service.dart';
 import '../../services/auth_service.dart';
 import 'auth_notifier.dart';
@@ -15,6 +17,16 @@ final aiServiceProvider = Provider<AIService>((ref) {
   // TODO: Replace with actual API key from environment or secure storage
   const apiKey = 'sk-ant-example-key-replace-in-production';
   return AIService(apiKey: apiKey);
+});
+
+/// GachaRepository を提供するプロバイダー
+final gachaRepositoryProvider = Provider<GachaRepository>((ref) {
+  return GachaRepository();
+});
+
+/// UserRepository を提供するプロバイダー
+final userRepositoryProvider = Provider<UserRepository>((ref) {
+  return UserRepository();
 });
 
 // ========== State Management Providers ==========
@@ -45,7 +57,6 @@ final isAuthenticatedProvider = Provider<bool>((ref) {
 });
 
 // ========== Gacha Items State Management ==========
-// TODO: Implement after Firestore repository setup
 
 // /// ガチャアイテムリストプロバイダー
 // final gachaItemsProvider = FutureProvider<List<GachaItem>>((ref) async {
@@ -56,11 +67,32 @@ final isAuthenticatedProvider = Provider<bool>((ref) {
 //   return repository.getUserItems(userId);
 // });
 
-// /// ガチャアイテム追加プロバイダー
-// final addGachaItemProvider = FutureProvider.family<void, GachaItem>((ref, item) async {
+// /// シリーズ別ガチャアイテムプロバイダー
+// final gachaItemsBySeriesProvider =
+//     FutureProvider.family<List<GachaItem>, String>((ref, series) async {
+//   final userId = ref.watch(userIdProvider);
+//   if (userId == null) return [];
+//
 //   final repository = ref.watch(gachaRepositoryProvider);
-//   await repository.addItem(item);
-//   ref.refresh(gachaItemsProvider);
+//   return repository.getUserItemsBySeries(userId, series);
+// });
+
+// /// ユーザー統計プロバイダー
+// final userStatisticsProvider = FutureProvider<ItemStatistics>((ref) async {
+//   final userId = ref.watch(userIdProvider);
+//   if (userId == null) {
+//     return ItemStatistics(
+//       totalItems: 0,
+//       duplicateItems: 0,
+//       manuallyEditedItems: 0,
+//       rarityDistribution: {},
+//       seriesCount: 0,
+//       uniqueSeriesMap: {},
+//     );
+//   }
+//
+//   final repository = ref.watch(gachaRepositoryProvider);
+//   return repository.getUserStatistics(userId);
 // });
 
 // ========== AI Judgment State Management ==========
