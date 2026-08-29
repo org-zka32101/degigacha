@@ -1,6 +1,13 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../data/models/gacha_item_model.dart';
+import '../../domain/usecases/gacha_usecase.dart';
+import '../../services/storage_service.dart';
+import '../riverpod/auth_notifier.dart';
+import '../riverpod/providers.dart';
 
 /// 撮影・AI判定画面
 ///
@@ -19,6 +26,8 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
   final ImagePicker _imagePicker = ImagePicker();
   XFile? _selectedImage;
   bool _isProcessing = false;
+  AIResult? _aiResult;
+  String? _errorMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -123,20 +132,42 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
             width: double.infinity,
             height: 300,
             color: Colors.grey[300],
-            child: Image.network(
-              _selectedImage!.path,
+            child: Image.file(
+              File(_selectedImage!.path),
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
-                return const Center(
-                  child: Icon(Icons.error),
+                return Center(
+                  child: Icon(
+                    Icons.error,
+                    size: 40,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
                 );
               },
             ),
           ),
           const SizedBox(height: 24),
 
-          // TODO: Display AI judgment results
-          if (_isProcessing)
+          // エラーメッセージ表示
+          if (_errorMessage != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.errorContainer,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  _errorMessage!,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                ),
+              ),
+            )
+          else if (_isProcessing)
             const Padding(
               padding: EdgeInsets.all(24.0),
               child: Column(
@@ -147,7 +178,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                 ],
               ),
             )
-          else
+          else if (_aiResult != null)
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: Column(
@@ -176,7 +207,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    'サンプルキャラクター',
+                                    _aiResult!.name,
                                     style: Theme.of(context)
                                         .textTheme
                                         .titleMedium,
@@ -190,17 +221,21 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .secondaryContainer,
+                                  color: _getRarityColor(
+                                    _aiResult!.rarity,
+                                    context,
+                                  ),
                                   borderRadius:
                                       BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  'SSR',
+                                  _aiResult!.rarity.value,
                                   style: Theme.of(context)
                                       .textTheme
-                                      .labelMedium,
+                                      .labelMedium
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                 ),
                               ),
                             ],
@@ -209,20 +244,22 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                           _buildDetailRow(
                             context,
                             'シリーズ',
-                            'サンプルシリーズ',
+                            _aiResult!.series,
                           ),
                           const SizedBox(height: 8),
                           _buildDetailRow(
                             context,
                             '信頼度',
-                            '92%',
+                            '${(_aiResult!.confidence * 100).toStringAsFixed(0)}%',
                           ),
-                          const SizedBox(height: 8),
-                          _buildDetailRow(
-                            context,
-                            '状態',
-                            '新規',
-                          ),
+                          if (_aiResult!.notes != null) ...[
+                            const SizedBox(height: 8),
+                            _buildDetailRow(
+                              context,
+                              'メモ',
+                              _aiResult!.notes!,
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -236,15 +273,24 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                   ),
                   const SizedBox(height: 8),
                   LinearProgressIndicator(
-                    value: 0.92,
+                    value: _aiResult!.confidence,
                     minHeight: 8,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _getConfidenceLabel(_aiResult!.confidence),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurfaceVariant,
+                    ),
                   ),
                   const SizedBox(height: 24),
 
                   // Manual Edit Option
                   OutlinedButton.icon(
                     onPressed: () {
-                      // Show edit dialog
+                      // TODO: Show edit dialog
                     },
                     icon: const Icon(Icons.edit),
                     label: const Text('情報を編集'),
@@ -256,16 +302,20 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton.icon(
-                      onPressed: _confirmRegistration,
+                      onPressed: _isProcessing
+                          ? null
+                          : _confirmRegistration,
                       icon: const Icon(Icons.check_circle),
                       label: const Text('コレクションに追加'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context)
-                            .colorScheme
-                            .primary,
-                        foregroundColor: Theme.of(context)
-                            .colorScheme
-                            .onPrimary,
+                        backgroundColor:
+                            Theme.of(context)
+                                .colorScheme
+                                .primary,
+                        foregroundColor:
+                            Theme.of(context)
+                                .colorScheme
+                                .onPrimary,
                       ),
                     ),
                   ),
@@ -276,11 +326,15 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                     width: double.infinity,
                     height: 56,
                     child: OutlinedButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          _selectedImage = null;
-                        });
-                      },
+                      onPressed: _isProcessing
+                          ? null
+                          : () {
+                              setState(() {
+                                _selectedImage = null;
+                                _aiResult = null;
+                                _errorMessage = null;
+                              });
+                            },
                       icon: const Icon(Icons.refresh),
                       label: const Text('再撮影'),
                     ),
@@ -291,6 +345,24 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
         ],
       ),
     );
+  }
+
+  /// レアリティに対応する色を取得
+  Color _getRarityColor(Rarity rarity, BuildContext context) {
+    return switch (rarity) {
+      Rarity.ssr => const Color(0xFFFFD700), // Gold
+      Rarity.sr => const Color(0xFFC0C0C0), // Silver
+      Rarity.r => const Color(0xFFCD7F32), // Bronze
+      Rarity.n => Colors.grey, // Gray
+    };
+  }
+
+  /// 信頼度のラベルを取得
+  String _getConfidenceLabel(double confidence) {
+    if (confidence >= 0.95) return '非常に高い信頼度';
+    if (confidence >= 0.85) return '高い信頼度';
+    if (confidence >= 0.75) return '中程度の信頼度';
+    return 'レビュー推奨';
   }
 
   Widget _buildDetailRow(
@@ -344,35 +416,102 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
   Future<void> _performAIJudgment() async {
     setState(() {
       _isProcessing = true;
+      _errorMessage = null;
     });
 
-    // TODO: Call AI Service to judge the image
-    // final result = await ref.read(aiServiceProvider).identifyGachaItem(
-    //       _selectedImage!.path,
-    //     );
+    try {
+      // AI Service で画像を判定
+      final aiService = ref.read(aiServiceProvider);
+      final result = await aiService.identifyGachaItem(_selectedImage!.path);
 
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (mounted) {
-      setState(() {
-        _isProcessing = false;
-      });
+      if (mounted) {
+        setState(() {
+          _aiResult = result;
+          _isProcessing = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'AI判定に失敗しました: $e';
+          _isProcessing = false;
+        });
+      }
     }
   }
 
   Future<void> _confirmRegistration() async {
-    // TODO: Add the item to collection in Firestore
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('コレクションに追加されました！'),
-          duration: Duration(seconds: 2),
-        ),
+    if (_aiResult == null) {
+      _showErrorSnackBar('AI判定結果が見つかりません');
+      return;
+    }
+
+    setState(() {
+      _isProcessing = true;
+    });
+
+    try {
+      final authState = ref.read(authNotifierProvider);
+      final userId = authState.user?.uid;
+
+      if (userId == null) {
+        _showErrorSnackBar('ユーザーが見つかりません');
+        return;
+      }
+
+      // Firebase Storage にアップロード
+      final storageService = StorageService();
+      final imageUrl = await storageService.uploadGachaItemImage(
+        userId: userId,
+        imagePath: _selectedImage!.path,
       );
 
-      // Return to home
-      Navigator.of(context).pop();
+      // Gacha Usecase でアイテムを登録
+      final gachaUsecase = ref.read(gachaUsecaseProvider);
+      final itemId = await gachaUsecase.registerItemFromImage(
+        userId: userId,
+        imagePath: _selectedImage!.path,
+        imageUrl: imageUrl,
+      );
+
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+
+        // 成功メッセージを表示
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('✅ コレクションに追加されました！'),
+            duration: const Duration(seconds: 2),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+        );
+
+        // ホーム画面に戻る
+        await Future.delayed(const Duration(seconds: 1));
+        if (mounted) {
+          context.go('/');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+          _errorMessage = 'アイテム登録に失敗しました: $e';
+        });
+        _showErrorSnackBar(_errorMessage!);
+      }
     }
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Theme.of(context).colorScheme.error,
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 }

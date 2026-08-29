@@ -27,6 +27,10 @@ dependencies:
   firebase_crashlytics: ^3.3.0
   firebase_remote_config: ^4.3.0
 
+  # Authentication Providers
+  google_sign_in: ^6.1.5
+  sign_in_with_apple: ^5.0.0
+
   # Camera & Image
   camera: ^0.10.5+2
   image_picker: ^1.0.4
