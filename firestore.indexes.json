@@ -1,0 +1,72 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "gacha_items",
+      "queryScope": "Collection",
+      "fields": [
+        {
+          "fieldPath": "aiResult.series",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "gacha_items",
+      "queryScope": "Collection",
+      "fields": [
+        {
+          "fieldPath": "aiResult.rarity",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "gacha_items",
+      "queryScope": "Collection",
+      "fields": [
+        {
+          "fieldPath": "isDuplicate",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "gacha_items",
+      "queryScope": "Collection",
+      "fields": [
+        {
+          "fieldPath": "isManualEdit",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": [
+    {
+      "collectionGroup": "gacha_items",
+      "fieldPath": "aiResult",
+      "indexes": [
+        {
+          "order": "ASCENDING",
+          "queryScope": "Collection"
+        }
+      ]
+    }
+  ]
+}

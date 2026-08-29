@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ユーザー認証チェック関数
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // リクエストユーザーかチェック
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Timestampが有効かチェック
+    function isValidTimestamp(value) {
+      return value is timestamp || value == request.time;
+    }
+
+    // Users collection ルール
+    match /users/{userId} {
+      // ユーザーのみ自身のドキュメントを読取可能
+      allow read: if isOwner(userId);
+
+      // ユーザーのみ自身のドキュメントを作成・更新可能
+      allow create: if isAuthenticated() && isOwner(userId)
+        && request.resource.data.keys().hasAll(['uid', 'email', 'createdAt']);
+      allow update: if isOwner(userId)
+        && request.resource.data.uid == resource.data.uid; // uid は変更不可
+
+      // ユーザーのみ自身のドキュメントを削除可能（ユーザーアカウント削除時）
+      allow delete: if isOwner(userId);
+
+      // 各ユーザーの gacha_items subcollection
+      match /gacha_items/{itemId} {
+        // ユーザーのみ自身のアイテム一覧を読取可能
+        allow read: if isOwner(userId);
+
+        // ユーザーのみ自身のアイテムを作成・更新可能
+        allow create: if isOwner(userId)
+          && request.resource.data.keys().hasAll(['userId', 'imageUrl', 'aiResult', 'createdAt']);
+        allow update: if isOwner(userId);
+
+        // ユーザーのみ自身のアイテムを削除可能
+        allow delete: if isOwner(userId);
+      }
+    }
+
+    // Admin-only analytics collection
+    match /analytics/{document=**} {
+      // 認証ユーザーのみ読取可能
+      allow read: if isAuthenticated();
+
+      // 書き込みは禁止（Cloud Functions のみが実行）
+      allow write: if false;
+    }
+
+    // Admin-only configuration collection
+    match /config/{document=**} {
+      // 認証ユーザーのみ読取可能
+      allow read: if isAuthenticated();
+
+      // 書き込みは禁止（Firebase Console/Admin SDK のみが実行）
+      allow write: if false;
+    }
+
+    // デフォルトルール：拒否
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,66 @@
+# Flutter specific
+build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.fvm/
+.packages
+.pub-cache/
+.pub/
+coverage/
+*.iml
+*.lock
+
+# Generated files
+*.g.dart
+*.config.dart
+*.freezed.dart
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+# Note: firebase_options.dart is committed with placeholder values for dev
+# In production, use FlutterFire CLI to generate platform-specific config
+
+# iOS/macOS
+ios/Pods/
+ios/Podfile.lock
+macos/Pods/
+macos/Podfile.lock
+
+# Android
+android/.gradle/
+android/local.properties
+android/key.properties
+
+# Web
+web/version.json
+
+# Testing
+test/.test_coverage.dart
+coverage/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+.~
+
+# Mac specific
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# User-specific
+.claude/
