@@ -1,4 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:logger/logger.dart';
 
 /// Firebase認証サービス
@@ -29,34 +31,70 @@ class AuthService {
     try {
       _logger.i('Google Sign-In開始');
 
-      // TODO: Implement Google Sign-In
-      // GoogleSignInプラグインを使用して実装予定
-      // final GoogleSignIn googleSignIn = GoogleSignIn();
-      // final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      // final GoogleSignInAuthentication googleAuth =
-      //     await googleUser!.authentication;
-      // final credential = GoogleAuthProvider.credential(
-      //   accessToken: googleAuth.accessToken,
-      //   idToken: googleAuth.idToken,
-      // );
-      // return await _firebaseAuth.signInWithCredential(credential);
+      final GoogleSignIn googleSignIn = GoogleSignIn();
 
-      throw UnimplementedError('Google Sign-Inはまだ実装されていません');
+      // 既にサインイン済みの場合はサインアウト
+      if (await googleSignIn.isSignedIn()) {
+        await googleSignIn.signOut();
+      }
+
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+      if (googleUser == null) {
+        _logger.w('Google Sign-Inキャンセル');
+        throw AuthServiceException('Google Sign-Inがキャンセルされました');
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final result = await _firebaseAuth.signInWithCredential(credential);
+      _logger.i('Google Sign-In成功: ${result.user?.uid}');
+
+      return result;
+    } on FirebaseAuthException catch (e) {
+      _logger.e('Google Sign-Inエラー: ${e.code} - ${e.message}');
+      throw AuthServiceException(_getErrorMessage(e.code));
     } catch (e) {
       _logger.e('Google Sign-Inエラー: $e');
       throw AuthServiceException('Google Sign-Inに失敗しました: $e');
     }
   }
 
-  /// Apple Sign-In (iOS)
+  /// Apple Sign-In (iOS only)
   Future<UserCredential?> signInWithApple() async {
     try {
       _logger.i('Apple Sign-In開始');
 
-      // TODO: Implement Apple Sign-In
-      // sign_in_with_appleプラグインを使用して実装予定
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDSignInScopes.email,
+          AppleIDSignInScopes.fullName,
+        ],
+      );
 
-      throw UnimplementedError('Apple Sign-Inはまだ実装されていません');
+      final oAuthProvider = OAuthProvider('apple.com');
+      final oAuthCredential = oAuthProvider.credential(
+        idToken: credential.identityToken,
+        accessToken: credential.authorizationCode,
+        rawNonce: credential.nonce,
+      );
+
+      final result = await _firebaseAuth.signInWithCredential(oAuthCredential);
+      _logger.i('Apple Sign-In成功: ${result.user?.uid}');
+
+      return result;
+    } on SignInWithAppleAuthorizationException catch (e) {
+      _logger.w('Apple Sign-Inキャンセル: ${e.code}');
+      throw AuthServiceException('Apple Sign-Inがキャンセルされました');
+    } on FirebaseAuthException catch (e) {
+      _logger.e('Apple Sign-Inエラー: ${e.code} - ${e.message}');
+      throw AuthServiceException(_getErrorMessage(e.code));
     } catch (e) {
       _logger.e('Apple Sign-Inエラー: $e');
       throw AuthServiceException('Apple Sign-Inに失敗しました: $e');
