@@ -240,6 +240,14 @@ class HomeScreen extends ConsumerWidget {
         ],
         onTap: (index) {
           // Handle navigation
+          if (index == 1) {
+            // Navigate to onboarding/collection
+            context.go('/onboarding');
+          } else if (index == 2) {
+            // Navigate to trading (Phase 6-11)
+            // context.go('/trade');
+          }
+          // index == 0 is home (current page)
         },
       ),
     );
