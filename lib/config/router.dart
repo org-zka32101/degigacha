@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../presentation/screens/home_screen.dart';
 import '../presentation/screens/capture_screen.dart';
 import '../presentation/screens/login_screen.dart';
+import '../presentation/screens/password_reset_screen.dart';
 
 import '../presentation/riverpod/auth_notifier.dart';
 
@@ -13,7 +14,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: authState.isAuthenticated ? '/' : '/login',
     redirect: (context, state) {
       // ユーザーがログインしていない場合
-      if (!authState.isAuthenticated && state.location != '/login') {
+      if (!authState.isAuthenticated &&
+          state.location != '/login' &&
+          state.location != '/password-reset') {
         return '/login';
       }
 
@@ -28,6 +31,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/password-reset',
+        builder: (context, state) => const PasswordResetScreen(),
       ),
       GoRoute(
         path: '/',

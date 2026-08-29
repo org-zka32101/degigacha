@@ -261,9 +261,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     TextButton(
                       onPressed: isLoading
                           ? null
-                          : () {
-                              // TODO: Navigate to password reset
-                            },
+                          : () => context.go('/password-reset'),
                       child: const Text('パスワードを忘れた方へ'),
                     ),
                   ],
