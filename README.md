@@ -66,13 +66,100 @@ CI/CD:       GitHub Actions → TestFlight / Firebase App Distribution
 
 ## 🚀 開発ステータス
 
-**Phase**: 初期設定完了 → データモデル実装予定
+**Current Phase**: Phase 6 Preview ✅ COMPLETE (50% Overall Progress)
 
-詳細は `IMPLEMENTATION_PLAN.md` を参照
+### Completed Phases
+- ✅ Phase 0: Flutter Infrastructure Setup
+- ✅ Phase 1: Firebase Firestore & Data Persistence
+- ✅ Phase 2: Authentication Flow
+- ✅ Phase 4-5: Aha Moment Implementation (Capture + AI + Storage)
+- ✅ Phase 6 Preview: Onboarding & Collection Display
+  - OnboardingScreen (series selection grid)
+  - CollectionDisplayScreen (statistics & progress)
+  - 65+ unit/widget tests
+  - Firestore data seeding
+
+### Next Critical Phase: Phase 3 AI Validation Testing 🔴
+- **Status**: Ready for execution
+- **Success Criteria**: ≥85% AI accuracy required
+- **Timeline**: 7 days (data collection + testing)
+- **Blocking**: Must pass before Phase 6+ full features
+
+詳細は下記を参照:
+- `PROJECT_STATUS.md` - 全体の進捗管理
+- `IMPLEMENTATION_PLAN_DETAILED.md` - 17フェーズの詳細ロードマップ
+- `docs/PHASE_3_EXECUTION_CHECKLIST.md` - Phase 3実行チェックリスト
+
+## 🚀 クイックスタート
+
+### 環境セットアップ
+
+```bash
+# 依存関係をインストール
+flutter pub get
+
+# Firestoreシードデータをセットアップ
+dart scripts/seed_firestore_series.dart
+
+# テストを実行
+flutter test
+
+# アプリを起動
+flutter run
+```
+
+### Phase 3 AI Validation Testing を実行
+
+**1. テスト画像を準備 (1-2日)**
+```bash
+# テスト画像ディレクトリを作成
+mkdir -p test/ai_validation/test_images/{normal,blurry,damaged,poor_lighting}
+
+# 100-150+ のガチャアイテム画像を配置
+# 推奨: Normal (50+), Blurry (20+), Damaged (15+), Poor Lighting (15+)
+```
+
+**2. Ground Truth マニフェストを作成 (1日)**
+```bash
+# test/ai_validation/test_data_manifest.json を編集
+# 各画像に対して期待値（name, series, rarity）を記録
+```
+
+**3. テストを実行 (3-4日)**
+```bash
+flutter test test/ai_validation/ai_validator_test.dart -v
+```
+
+**4. 結果を分析 (1日)**
+```bash
+# test/ai_validation/RESULTS.md を作成
+# 精度メトリクスが ≥85% を達成したか確認
+```
+
+詳細: `docs/PHASE_3_EXECUTION_CHECKLIST.md`
+
+## 📚 ドキュメント
+
+| ドキュメント | 説明 |
+|-------------|------|
+| `PROJECT_STATUS.md` | 全体進捗、完了フェーズ、次のステップ |
+| `IMPLEMENTATION_PLAN_DETAILED.md` | 17フェーズの詳細なロードマップ |
+| `docs/FIRESTORE_SCHEMA.md` | Firestoreのデータベーススキーマ |
+| `docs/PHASE_3_EXECUTION_GUIDE.md` | Phase 3の詳細実行ガイド |
+| `docs/PHASE_3_EXECUTION_CHECKLIST.md` | Phase 3実行チェックリスト |
+| `docs/PHASE_6_PREVIEW_IMPLEMENTATION.md` | Phase 6実装の詳細 |
+| `docs/PHASE_6_TEST_IMPLEMENTATION.md` | テスト実装ドキュメント |
+| `docs/FIRESTORE_SETUP_GUIDE.md` | Firestoreセットアップガイド |
 
 ## ⚠️ 重要な注意事項
 
-🔴 **AI画像認識精度は未検証** 
-- 実装前に必ず7日プロト検証を実施
+🔴 **AI画像認識精度は Phase 3 で検証予定** 
+- Phase 3 実行で ≥85% 達成が必須
 - ガチャ商品特化の精度実績データなし
 - 候補提示型UI前提で設計（100%自動 ≠ 成功条件）
+
+## 📞 サポート
+
+- 質問は GitHub Issues で
+- 開発ドキュメントは `docs/` ディレクトリ参照
+- テスト実行は `flutter test` コマンド使用
