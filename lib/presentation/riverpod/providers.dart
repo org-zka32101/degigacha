@@ -1,11 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/repositories/gacha_repository.dart';
+import '../../data/repositories/login_bonus_repository.dart';
 import '../../data/repositories/user_repository.dart';
 import '../../domain/usecases/auth_usecase.dart';
 import '../../domain/usecases/gacha_usecase.dart';
 import '../../services/ai_service.dart';
 import '../../services/auth_service.dart';
 import 'auth_notifier.dart';
+import 'login_bonus_notifier.dart';
 
 // ========== Service Providers ==========
 
@@ -29,6 +32,11 @@ final gachaRepositoryProvider = Provider<GachaRepository>((ref) {
 /// UserRepository を提供するプロバイダー
 final userRepositoryProvider = Provider<UserRepository>((ref) {
   return UserRepository();
+});
+
+/// LoginBonusRepository を提供するプロバイダー
+final loginBonusRepositoryProvider = Provider<LoginBonusRepository>((ref) {
+  return LoginBonusRepository(FirebaseFirestore.instance);
 });
 
 // ========== Use Case Providers ==========
@@ -79,6 +87,17 @@ final isAuthenticatedProvider = Provider<bool>((ref) {
   final authState = ref.watch(authNotifierProvider);
   return authState.isAuthenticated;
 });
+
+// ========== Login Bonus State Management ==========
+
+/// ログインボーナスプロバイダー
+final loginBonusProvider =
+    StateNotifierProvider.family<LoginBonusNotifier, AsyncValue<LoginBonus?>, String>(
+  (ref, userId) {
+    final repository = ref.watch(loginBonusRepositoryProvider);
+    return LoginBonusNotifier(repository);
+  },
+);
 
 // ========== Gacha Items State Management ==========
 
