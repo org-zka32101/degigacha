@@ -1,8 +1,8 @@
 # Digital Gacha Collection - Project Status
 
-**Last Updated**: 2026-08-29 (Test Suite Added)  
-**Project Phase**: 6/17 (Phase 6 Preview - Onboarding & Collection Display)  
-**Overall Progress**: ~45% Complete (Phases 0-2 + 4-5 Complete, Phase 6 Preview + Tests)
+**Last Updated**: 2026-09-01 (Phase 6A/6B Implementation)  
+**Project Phase**: 6/17 (Phase 6A UI/UX完成、Phase 6B ユーザー定着施策進行中)  
+**Overall Progress**: ~50% Complete (Phases 0-2 + 4-6A完成、Phase 6B進行中)
 
 ---
 
@@ -91,21 +91,40 @@
 - `.github/workflows/flutter-ci.yml`
 - `docs/PHASE_4_5_IMPLEMENTATION_SUMMARY.md`
 
-#### **Phase 6 Preview: Onboarding & Collection Display** (In Progress)
-- ✅ GachaSeriesModel for series data management
-- ✅ SeriesRepository for Firestore series operations
-- ✅ Riverpod providers for series state management
-- ✅ OnboardingScreen showing series selection grid
-- ✅ CollectionDisplayScreen showing collection stats
-- ✅ Routes for /onboarding and /collection/:seriesId
+#### **Phase 6A: UI/UX Enhancement** (✅ COMPLETE)
+Advanced screen improvements with animations, interactive controls, and probability visualization.
+
+**What's been implemented**:
+- ✅ CaptureScreenEnhanced (ScaleTransition, SlideTransition, confetti animation)
+- ✅ CollectionDisplayScreenEnhanced (sort/filter UI, grid/list toggle)
+- ✅ GachaOddsScreen (3-tab interface: probability table, simulator, target calculator)
 
 **Deliverables**:
-- `lib/data/models/gacha_series_model.dart`
-- `lib/data/repositories/series_repository.dart`
-- `lib/presentation/screens/onboarding_screen.dart`
-- `lib/presentation/screens/collection_display_screen.dart`
-- `lib/config/router.dart` (updated)
-- `lib/presentation/riverpod/providers.dart` (updated)
+- `lib/presentation/screens/capture_screen_enhanced.dart` (721 lines)
+- `lib/presentation/screens/collection_display_screen_enhanced.dart` (662 lines)
+- `lib/presentation/screens/gacha_odds_screen.dart` (588 lines)
+
+#### **Phase 6B: User Retention Features** (🔄 IN PROGRESS)
+Engagement and retention mechanics with daily rewards, limited-time events, and character progression.
+
+**What's been implemented**:
+- ✅ LoginBonusSystem (bronze/silver/gold/platinum tiers, consecutive day tracking)
+- ✅ DailySpinSystem (rotating wheel animation, probability-based results)
+- ✅ EventGachaSystem (limited-time characters, increased SSR probability)
+- 🔜 CharacterProgressionSystem (level/experience tracking)
+
+**Deliverables** (Phase 6B):
+- `lib/data/models/login_bonus_model.dart`
+- `lib/data/repositories/login_bonus_repository.dart`
+- `lib/presentation/riverpod/login_bonus_notifier.dart`
+- `lib/presentation/screens/login_bonus_screen.dart`
+- `lib/data/models/daily_spin_model.dart`
+- `lib/data/repositories/daily_spin_repository.dart`
+- `lib/presentation/riverpod/daily_spin_notifier.dart`
+- `lib/presentation/screens/daily_spin_screen.dart`
+- `lib/data/models/event_gacha_model.dart`
+- `lib/data/repositories/event_gacha_repository.dart`
+- `lib/presentation/riverpod/providers.dart` (updated with all providers)
 
 ---
 
