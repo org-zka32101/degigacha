@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../data/repositories/character_progression_repository.dart';
 import '../../data/repositories/daily_spin_repository.dart';
 import '../../data/repositories/gacha_repository.dart';
 import '../../data/repositories/login_bonus_repository.dart';
@@ -9,6 +10,7 @@ import '../../domain/usecases/gacha_usecase.dart';
 import '../../services/ai_service.dart';
 import '../../services/auth_service.dart';
 import 'auth_notifier.dart';
+import 'character_progression_notifier.dart';
 import 'daily_spin_notifier.dart';
 import 'login_bonus_notifier.dart';
 
@@ -44,6 +46,12 @@ final loginBonusRepositoryProvider = Provider<LoginBonusRepository>((ref) {
 /// DailySpinRepository を提供するプロバイダー
 final dailySpinRepositoryProvider = Provider<DailySpinRepository>((ref) {
   return DailySpinRepository(FirebaseFirestore.instance);
+});
+
+/// CharacterProgressionRepository を提供するプロバイダー
+final characterProgressionRepositoryProvider =
+    Provider<CharacterProgressionRepository>((ref) {
+  return CharacterProgressionRepository(FirebaseFirestore.instance);
 });
 
 // ========== Use Case Providers ==========
@@ -114,6 +122,30 @@ final dailySpinProvider =
   (ref, userId) {
     final repository = ref.watch(dailySpinRepositoryProvider);
     return DailySpinNotifier(repository);
+  },
+);
+
+// ========== Character Progression State Management ==========
+
+/// キャラクター育成プロバイダー
+final characterProgressionProvider = StateNotifierProvider.family<
+    CharacterProgressionNotifier,
+    AsyncValue<List<CharacterProgression>>,
+    String>(
+  (ref, userId) {
+    final repository = ref.watch(characterProgressionRepositoryProvider);
+    return CharacterProgressionNotifier(repository);
+  },
+);
+
+/// 単一キャラクター育成プロバイダー
+final singleCharacterProgressionProvider = StateNotifierProvider.family<
+    SingleCharacterProgressionNotifier,
+    AsyncValue<CharacterProgression?>,
+    (String, String)>(
+  (ref, params) {
+    final repository = ref.watch(characterProgressionRepositoryProvider);
+    return SingleCharacterProgressionNotifier(repository);
   },
 );
 
